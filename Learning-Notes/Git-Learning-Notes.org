@@ -1,0 +1,187 @@
+#+TITLE: Git学习笔记
+* Git基础
+** 取得GIt仓库
+*** 在工作目录初始化新仓库
+到所在的项目目录执行：
+#+BEGIN_SRC sh
+$ git init
+#+END_SRC
+如果当前目录下有几个文件想要纳入版本控制，需要先用 git add 命令告诉 Git 开始对这些文件进行跟踪，然后提交：
+#+BEGIN_SRC sh
+$ git add *.c
+$ git add README
+$ git commit -m 'initial project version'
+#+END_SRC
+*** 从现有仓库克隆
+克隆仓库的命令格式为 git clone [url]。比如，要克隆 Ruby 语言的 Git 代码仓库 Grit，可以用下面的命令：
+#+BEGIN_SRC sh
+$ git clone git://github.com/schacon/grit.git
+#+END_SRC
+** 记录每次更新到仓库
+*** 检测当前文件状态
+输出当前文件的状态。
+#+BEGIN_SRC sh
+$ git status
+#+END_SRC
+*** 跟踪新文件
+使用以下命令跟踪一个新文件。
+#+BEGIN_SRC sh
+$ git add <file_name>
+#+END_SRC 
+*** 暂存已修改文件
+修改了已跟踪过的文件，还是通过 git add 命令将文件内容放到暂存区。
+git add 命令是一个多功能命令，根据目标文件的状态不同，此命令的效果也不同：可以用它开始跟踪新文件，或者把已跟踪的文件放到暂存区，还能用于合并时把有冲突的文件标记为已解决状态等。
+*** 忽略某些文件
+一般我们总会有些文件无需纳入 Git 的管理，也不希望它们总出现在未跟踪文件列表。通常都是些自动生成的文件，比如日志文件，或者编译过程中创建的临时文件等。我们可以创建一个名为 .gitignore 的文件，列出要忽略的文件模式。
+#+BEGIN_EXAMPLE
+# 此为注释 – 将被 Git 忽略
+# 忽略所有 .a 结尾的文件
+*.a
+# 但 lib.a 除外
+!lib.a
+# 仅仅忽略项目根目录下的 TODO 文件，不包括 subdir/TODO
+/TODO
+# 忽略 build/ 目录下的所有文件
+build/
+# 会忽略 doc/notes.txt 但不包括 doc/server/arch.txt
+doc/*.txt
+# ignore all .txt files in the doc/ directory
+doc/**/*.txt
+#+END_EXAMPLE
+*** 提交更新
+#+BEGIN_SRC sh
+$ git commit -m "<Message>"
+#+END_SRC
+*** 跳过使用暂存区
+Git 提供了一个跳过使用暂存区域的方式，只要在提交的时候，给 git commit 加上 -a 选项，Git 就会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤：
+*** 移除文件
+用 git rm 命令完成此项工作，并连带从工作目录中删除指定的文件，这样以后就不会出现在未跟踪文件清单中了。
+另外一种情况是，我们想把文件从 Git 仓库中删除（亦即从暂存区域移除），但仍然希望保留在当前工作目录中。换句话说，仅是从跟踪清单中删除。比如一些大型日志文件或者一堆 .a 编译文件，不小心纳入仓库后，要移除跟踪但不删除文件，以便稍后在 .gitignore 文件中补上，用 --cached 选项即可：
+#+BEGIN_SRC sh
+$ git rm --cached readme.txt
+#+END_SRC
+*** 移动文件
+#+BEGIN_SRC sh
+$ git mv file_from file_to
+#+END_SRC
+** 查看提交历史
+使用 git log 命令，默认不用任何参数的话，git log 会按提交时间列出所有的更新，最近的更新排在最上面。
+常用 -p 选项展开显示每次提交的内容差异，用 -2 则仅显示最近的两次更新。
+还有个常用的 --pretty 选项，可以指定使用完全不同于默认格式的方式展示提交历史。比如用 oneline 将每个提交放在一行显示，这在提交数很大时非常有用。另外还有 short，full 和 fuller 可以用，展示的信息或多或少有些不同。
+#+BEGIN_SRC sh
+$ git log --pretty=oneline
+ca82a6dff817ec66f44342007202690a93763949 changed the version number
+085bb3bcb608e1e8451d4b2432f8ecbe6306e7e7 removed unnecessary test code
+a11bef06a3f659402fe7563abf99ad00de2209e6 first commit
+#+END_SRC
+format，可以定制要显示的记录格式，这样的输出便于后期编程提取分析。
+#+BEGIN_SRC sh
+$ git log --pretty=format:"%h - %an, %ar : %s"
+ca82a6d - Scott Chacon, 11 months ago : changed the version number
+085bb3b - Scott Chacon, 11 months ago : removed unnecessary test code
+a11bef0 - Scott Chacon, 11 months ago : first commit
+#+END_SRC
+常用的格式占位符写法及其代表的意义。
+| 选项 | 说明                                       |
+|------+--------------------------------------------|
+| %H   | 提交对象（commit）的完整哈希字串           |
+| %h   | 提交对象的简短哈希字串                     |
+| %T   | 树对象（tree）的完整哈希字串               |
+| %t   | 树对象的简短哈希字串                       |
+| %P   | 父对象（parent）的完整哈希字串             |
+| %p   | 父对象的简短哈希字串                       |
+| %an  | 作者（author）的名字                       |
+| %ae  | 作者的电子邮件地址                         |
+| %ad  | 作者修订日期（可以用 -date= 选项定制格式） |
+| %ar  | 作者修订日期，按多久以前的方式显示         |
+| %cn  | 提交者(committer)的名字                    |
+| %ce  | 提交者的电子邮件地址                       |
+| %cd  | 提交日期                                   |
+| %cr  | 提交日期，按多久以前的方式显示             |
+| %s   | 提交说明                                   |
+
+** diff命令比较不同
+*** git diff命令
+#+BEGIN_SRC sh -n 
+$ git diff
+diff --git a/first-file.txt b/first-file.txt
+index b57cf94..8ae03d7 100644
+--- a/first-file.txt
++++ b/first-file.txt
+@@ -1 +1,2 @@
+-This is the first file that I added to my project.
++This is the first file added to my project.
++It comes before all other files.
+#+END_SRC
+"-" 代表原版本，"+" 代表新版本。
+该命令比较的是工作区和暂存区、仓库的不同，也就是显示工作区中才有的。
+*** git diff --staged 命令
+该命令比较工作区和暂存区的不同。
+** 删除文件
+将文件从工作区中删除，然后执行 git rm <file_name> 命令(不再是 git add )以将更改存至暂存区，然后 commit 就可删除仓库中的文件。
+或者直接执行 rm 命令，将会自动删除工作区的文件并存至暂存区，然后 commit 。
+** 移动和重命名文件
+*** 重命名文件
+#+BEGIN_SRC sh
+$ git mv <file_name> <new_file_name>
+#+END_SRC
+*** 移动文件
+#+BEGIN_SRC sh
+$ git mv <file_name> <directory>
+#+END_SRC
+** 撤消操作
+*** 撤消工作区所做的更改
+将指定的文件/目录恢复成仓库中的版本。
+#+BEGIN_SRC sh
+$ git checkout -- <file_name/directory>
+#+END_SRC
+"--"是为了将后面的文件名和分支名区分。
+*** 撤消暂存区中的更改
+#+BEGIN_SRC sh
+$ git reset HEAD <file>
+#+END_SRC
+*** 恢复到旧版本
+#+BEGIN_SRC sh
+$ git checkout <SHA-1> -- <file_name>
+#+END_SRC
+该命令会把恢复到旧版本所需的更改放至暂存区，只需提交到仓库就可以了。
+或者使用更简单的命令，一步到位。
+#+BEGIN_SRC sh
+$ git revert <SHA-1>
+#+END_SRC
+*** git reset 命令
+#+BEGIN_SRC sh
+$ git reset --soft
+#+END_SRC
+
+#+BEGIN_SRC sh
+$ git reset --mixed
+#+END_SRC
+
+#+BEGIN_SRC sh
+$ git reset --hard
+#+END_SRC
+*** git clean 命令
+该命令会删除所有 untracked files。
+** 忽略文件
+在 .gitigore 文件中添加需要忽略的文件。
+*** 全局忽略
+#+BEGIN_SRC sh
+$ git config --global core.excludesfile <file>
+#+END_SRC
+就不用每个仓库都去添加重复的 .gitignore 文件了。
+*** 跟踪空目录
+git 本身不跟踪空的目录，如果需要跟踪新目录，可在目录下增加 .gitkeep 文件。
+** 分支
+*** 创建分支
+#+BEGIN_SRC sh
+$ git branch <branch_name>
+#+END_SRC
+*** 切换分支
+#+BEGIN_SRC sh
+$ git checkout <branch_name>
+#+END_SRC
+*** 创建分支并切换
+#+BEGIN_SRC sh
+$ git checkout -b <branch_name>
+#+END_SRC

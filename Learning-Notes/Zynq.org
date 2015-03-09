@@ -1,0 +1,16 @@
+* Ubuntu环境下XSDK自带的Terminal工具使用
+首先需要把当前用户添加进 dialout 组。
+#+BEGIN_SRC shell
+sudo adduser <username> dialout
+#+END_SRC
+查看你的USB情况，确定是哪个USB口。比如，我的就是 /dev/ttyUSB1。
+打开XSDK的Terminal工具的设置界面，连接类型(Connection Type)选择 Serial，Port那一栏填写你的USB口名称，设置好波特率为115200，点击OK完成设置。
+点击 '连接' 。
+若运行程序时导致XSDK出错并强行关闭，可以参考以下方法解决。
+#+BEGIN_SRC sh
+sudo aptitude install librxtx-java
+cd <your xsdk location>/eclipse/lnx64.o/plugins/gnu.io.rxtx.linux.x86_64_2.1.7.3_v20071015/os/linux/x86_64
+sudo mv librxtxSerial.so librxtxSerial.so.orig
+sudo ln -sf /usr/lib/jni/librxtxSerial.so librxtxSerial.so
+#+END_SRC
+参考网站：[[http://forums.xilinx.com/t5/Installation-and-Licensing/SDK-segfault-on-UART-output/td-p/160000][SDK segfault on UART output]]

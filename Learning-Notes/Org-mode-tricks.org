@@ -1,0 +1,55 @@
+#+TITLE: Org-mode学习
+* Org-mode小技巧
+** 快速插入代码段和程序
+1. 输入 <s 再按 TAB 键，即可自动生成 #+BEGIN\_SRC ... #+END\_SRC
+2. 输入 <e 再按 TAB 键，即可自动生成 #+BEGIN\_EXAMPLE ... #+END\_EXAMPLE
+** 代码语法高亮
+在 .emacs 文件中加入如下语句，就能在编辑代码的时候显示语法高亮效果。 
+#+BEGIN_SRC emacs-lisp 
+(setq org-src-fontify-natively t) 
+#+END_SRC
+安装 htmlize ，就能在输出的 HTML 文件也显示语法高亮效果。
+** 禁用下划线转义
+当输入了下划线，下划线后的项会被转换成下标的形式。可在 org 文件头部的 OPTIONS 里面添加 ^:nil:
+#+BEGIN_SRC org
+#+OPTIONS: ^:nil 
+#+END_SRC
+** 不关闭中文输入法也可以输入 '*' 号和 '-' 号
+当我们需要输入表示标题的 '*' 号和列表前面的 '-' 号时，需要切换到英文输入法状态。在 .emacs 文件中添加如下代码即可解决该问题。
+#+BEGIN_SRC emacs-lisp
+(defun org-mode-my-init ()
+  ; ......
+  (define-key org-mode-map (kbd "×") (kbd "*"))
+  (define-key org-mode-map (kbd "－") (kbd "-"))
+  )
+(add-hook 'org-mode-hook 'org-mode-my-init)
+#+END_SRC
+** 解决中英文混合时表格的对齐问题
+当表格中既有中文又有英文时，按 TAB 键对齐表格会出现对不齐的问题，解决办法时中英文字体采用不同的字体大小。
+比如英文使用 Consolas 11号字体，中文使用 微软雅黑 12 号字体。
+#+BEGIN_SRC emacs-lisp
+(set-default-font "Consolas 11")
+(set-fontset-font "fontset-default" 'unicode"微软雅黑 12") 
+#+END_SRC
+* Org-mode快捷键
+** 光标跳转
+| 按键键  | 功能         |
+|---------+--------------|
+| C-c C-n | 下个标题     |
+| C-c C-p | 上个标题     |
+| C-c C-f | 下个同级标题 |
+| C-c C-b | 上个同级标题 |
+| C-c C-u | 回到上层标题 |
+
+** 表格
+| 按键      | 功能                   |
+| C-c       | 将段落转换成表格       |
+| C-c C-c   | 对齐表格               |
+| <TAB>     | 移动到下一个单元格     |
+| S-<TAB>   | 移动到上一个单元格     |
+| M-Left    | 当前列左移             |
+| M-Up      | 当前行上移             |
+| M-S-Left  | 删除当前列             |
+| M-S-Right | 在当前列左侧插入新的列 |
+| M-S-Up    | 删除当前行             |
+| M-S-Down  | 在当前行上方插入新的行 |
