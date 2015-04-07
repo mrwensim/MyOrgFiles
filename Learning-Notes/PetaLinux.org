@@ -1,0 +1,119 @@
+* Boot with TFTP
+** Install and configure TFTP
+*** 1. Install TFTP
+#+BEGIN_SRC sh
+sudo apt-get install xinetd tftpd tftp
+#+END_SRC
+*** 2. Create /etc/xinetd.d/tftp and add lines below
+#+BEGIN_EXAMPLE
+service tftp
+{
+protocol = udp
+port = 69
+socket_type = dgram
+wait = yes
+user = nobody
+server = /usr/sbin/in.tftpd
+server_args = /tftpboot
+disable = no
+}
+#+END_EXAMPLE
+*** 3. Create a folder /tftboot
+#+BEGIN_SRC sh 
+sudo mkdir /tftpboot
+sudo chmod -R 777 /tftpboot
+sudo chown -R nobody /tftpboot
+#+END_SRC
+*** 4. Restart the xinetd service
+#+BEGIN_SRC sh
+sudo service xinetd restart
+#+END_SRC
+Now, tftp server is up and running.
+
+*** 5. Test out tftp server
+Create any file such as 'Hello.txt' in the /tftpboot directory.
+Then, enter into another directory, create any file like 'hello.txt'.
+#+BEGIN_SRC sh
+cd <directory>
+tftp localhost
+put hello.txt
+#+END_SRC 
+Then we can see
+#+BEGIN_SRC sh
+Received 16297 bytes in 0.0 seconds
+#+END_SRC
+Done!
+
+** Install the DHCP server
+*** 1. Install DHCP server
+#+BEGIN_SRC sh
+sudo apt-get install dhcp3-server
+#+END_SRC 
+*** 2. Open the 'isc-dhcp-server' file
+#+BEGIN_SRC sh
+sudo emacs /etc/default/isc-dhcp-server
+#+END_SRC
+Find this line
+#+BEGIN_EXAMPLE
+INTERFACES=" "
+#+END_EXAMPLE
+Replace it with
+#+BEGIN_EXAMPLE
+INTERFACES="eth0"
+#+END_EXAMPLE
+*** 3. Open the 'dhcpd.conf' file
+#+BEGIN_SRC sh
+sudo emacs /etc/dhcp/dhcpd.conf
+#+END_SRC
+Look for the following lines
+#+BEGIN_EXAMPLE
+default-lease-time 600;
+max-lease-time 7200;
+#+END_EXAMPLE
+Replace those lines with
+#+BEGIN_EXAMPLE
+default-lease-time 86400;
+max-lease-time 604800;
+
+option subnet-mask 255.255.255.0;
+option broadcast-address 192.168.1.255;
+option routers 192.168.1.254;
+option domain-name-servers 192.168.1.10;
+
+subnet 192.168.1.0 netmask 255.255.255.0 {
+range 192.168.1.1 192.168.1.200;
+}
+#+END_EXAMPLE
+Done!
+*** 4. Restart the DHCP server
+#+BEGIN_SRC sh
+sudo service isc-dhcp-server restart
+#+END_SRC
+** Configure static ip
+*** 1. Open the 'interfaces' file
+#+BEGIN_SRC sh
+sudo emacs /etc/network/interfaces
+#+END_SRC
+*** 2. Add the below line
+#+BEGIN_EXAMPLE
+auto eth0
+iface eth0 inet static
+address 192.168.1.1
+netmask 255.255.255.0
+broadcast 192.168.1.255
+gateway 192.168.1.1
+#+END_EXAMPLE
+*** 3.  Restart the network service
+#+BEGIN_SRC sh
+sudo service networking restart
+#+END_SRC
+*** NOte
+#+BEGIN_EXAMPLE
+This may cause the network-manager not to work.
+If you want to use the network-manager to control your network service, check the '/etc/NetworkManager/NetworkManager.conf' file.
+Make sure the value of 'managed' is ture.
+Then, restart the network-manager.
+#+END_EXAMPLE
+#+BEGIN_SRC sh
+sudo service network-manager restart
+#+END_SRC
